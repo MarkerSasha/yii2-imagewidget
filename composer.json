@@ -1,0 +1,22 @@
+{
+    "name": "r0n1k/yii2-imagewidget",
+    "description": "Simple widget to upload images",
+    "type": "yii2-extension",
+    "keywords": ["yii2","extension"],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Pavel M.",
+            "email": "rnk.wkr@gmail.com"
+        }
+    ],
+    "require": {
+        "php": ">=7.0.0",
+        "yiisoft/yii2": "~2.0.6"
+    },
+    "autoload": {
+        "psr-4": {
+            "r0n1k\\yii2imagewidget\\": "yii2-imagewidget"
+        }
+    }
+}
