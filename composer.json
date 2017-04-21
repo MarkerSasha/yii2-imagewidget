@@ -16,7 +16,7 @@
     },
     "autoload": {
         "psr-4": {
-            "r0n1k\\yii2imagewidget\\": "yii2-imagewidget"
+            "r0n1k\\yii2imagewidget\\": ""
         }
     },
     "scripts": {
