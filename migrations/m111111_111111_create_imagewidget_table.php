@@ -15,11 +15,9 @@ class m111111_111111_create_imagewidget_table extends Migration
         $this->createTable('imagewidget', [
             'id' => $this->primaryKey(),
             'group' => $this->string(64),
-            'sm_path' => $this->string(64),
-            'md_path' => $this->string(64),
-            'lg_path' => $this->string(64),
-            'original_path' => $this->string(64)->notNull(),
+            'original_name' => $this->string(64)->unique()->notNull(),
             'hash' => $this->string(64)->unique()->notNull(),
+            'extension' => $this->string(4)->notNull(),
         ]);
     }
 

@@ -25,17 +25,7 @@ to the require section of your `composer.json` file.
 Usage
 -----
 
-After instalation you need to migrate your db by  :
-(on linux)
-```sh
-php yii migrate/up --migrationPath="@vendor/r0n1k/yii2-imagewidget/migrations"
-```
-(on windows)
-```cmd
-yii.bat migrate/up --migrationPath="@vendor/r0n1k/yii2-imagewidget/migrations"
-```
-
-Next you need to create *ImageController*
+After instalation you need to create *ImageController*
 ```php
 class ImageController extends \yii\web\Controller
 {
@@ -53,7 +43,7 @@ class MyModel extends \yii\db\ActiveRecord
     public function getImage() : int
     {
         /* here some logic to get image id(s)
-            probably you have the junction table if the relation is 'one to many' or 'many to many'.
+            probably you have the junction table if the relation is 'many to many'.
             You should make sql query to get ids using your favorite way.
             Or if the relation is one to one, your model has field `image`(or another name)
             and you can just return this field
@@ -75,7 +65,7 @@ class MyModel extends \yii\db\ActiveRecord
 Now, you can use it in your active forms
 ```php
 ...
-    $form->field($model, 'FIELD_CONTAINS_IMAGE_ID(s)')->widget('\r0n1k\yii2imagewidget\ImageWidget', $options);
+    $form->field($model, 'image')->widget('\r0n1k\yii2imagewidget\ImageWidget', $options);
 ...
 ```
 Possible options:

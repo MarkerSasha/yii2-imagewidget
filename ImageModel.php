@@ -5,12 +5,15 @@ namespace r0n1k\yii2imagewidget;
 /**
  *  @property integer $id
  *  @property string $group
+ *  @property string $original_name
+ *  @property string $hash
+ *  @property string $extension
  */
 class ImageModel extends \yii\db\ActiveRecord
 {
 
     public $imagesPath = "@frontend/web/images";
-    public $imagesUrl = "/images";
+    public $imagesUrl = "@web/images";
 
     public static function tableName()
     {
@@ -25,8 +28,9 @@ class ImageModel extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['original_path','sm_path','md_path','lg_path','group'],'string','max'=>64],
-            [['original_path','sm_path','md_path','lg_path'],'unique'],
+            [['original_name','group', 'extension'],'string','max' => 64],
+            [['original_name','hash'],'unique'],
+            ['extension', 'in', 'range' => ['jpg','jpeg','gif','png']],
         ];
     }
 
@@ -59,10 +63,12 @@ class ImageModel extends \yii\db\ActiveRecord
             $imgt = "ImageGIF";
             $imgcreatefrom = "ImageCreateFromGIF";
         }
+
         if ($arr_image_details[2] == IMAGETYPE_JPEG) {
             $imgt = "ImageJPEG";
             $imgcreatefrom = "ImageCreateFromJPEG";
         }
+
         if ($arr_image_details[2] == IMAGETYPE_PNG) {
             $imgt = "ImagePNG";
             $imgcreatefrom = "ImageCreateFromPNG";
@@ -81,6 +87,63 @@ class ImageModel extends \yii\db\ActiveRecord
     }
 
 
+    public function getFullPath()
+    {
+        return \Yii::getAlias( $this->imagesPath ) . 
+            DIRECTORY_SEPARATOR . 'original' . DIRECTORY_SEPARATOR . 
+            $this->original_name . '.' . $this->extension;
+    }
+
+
+
+    public function makeThumb(int $width, int $height){
+
+        $fileName = $this->original_name. '.' . "$width.$height." . $this->extension;
+        $basePath = \Yii::getAlias( $this->imagesPath );
+        /* fullPath like: /www/project/frontend/web/images/<hash>.<width>.<height>.<extension> */
+        $fullPath = $basePath . DIRECTORY_SEPARATOR . $fileName;
+        $fullUrl = \Yii::getAlias( $this->imagesUrl ) . DIRECTORY_SEPARATOR . $fileName;
+
+        if(! is_file( $fullPath ) ){
+            if(! $this->resizeAndSave( $this->getFullPath() ,$width, $height, $fullPath ) ){
+                throw new \Exception("makeThumb error");
+            }
+        }
+
+        return $fullUrl;
+    }
+
+
+    /**
+     * @deprecated use makeThumb() to create url
+     */
+    public function getSmUrl()
+    {
+        return $this->makeThumb(256,256);
+    }
+
+    /**
+     * @deprecated use makeThumb() to create url
+     */
+    public function getMdUrl()
+    {
+        return $this->makeThumb(812,812);
+    }
+
+    /**
+     * @deprecated use makeThumb() to create url
+     */
+    public function getLgUrl()
+    {
+        return $this->makeThumb(1500,1500);
+    }
+
+
+    /**
+     *  upload by url
+     *  @param string $url
+     *  @return ImageModel
+     */
     public static function handleUrl($url) : ImageModel
     {
         $url = trim($url);
@@ -115,34 +178,36 @@ class ImageModel extends \yii\db\ActiveRecord
 
         $extension = substr(mime_content_type($fname), strlen('image/'));
 
+        $image->extension = $extension;
+
+        if(!$this->validate(['extension']) ){
+            @unlink($fname);
+        }
+
         do {
             $baseName = hash("crc32", $fname.time());
-            $original_path = \Yii::getAlias( $image->imagesPath.'/original/'.$baseName.'.'.$extension );
-        } while( ImageModel::find()->where(['original_path' => $original_path])->exists() );
+            $original_name = \Yii::getAlias( $image->imagesPath.'/original/'.$baseName.'.'.$extension );
+        } while( ImageModel::find()->where(['original_name' => $original_name])->exists() );
 
 
-        $image->original_path = $original_path;
-        rename($fname, $original_path);
-
-        $image->sm_path = '/sm/'.$baseName.'.'.$extension;
-        $image->md_path = '/md/'.$baseName.'.'.$extension;
-        $image->lg_path = '/lg/'.$baseName.'.'.$extension;
-
-        $resizing =
-            ImageModel::resizeAndSave($image->original_path, 256, 256,   $image->imagesPath.$image->sm_path) &&
-            ImageModel::resizeAndSave($image->original_path, 812, 812,   $image->imagesPath.$image->md_path) &&
-            ImageModel::resizeAndSave($image->original_path, 1500, 1500, $image->imagesPath.$image->lg_path);
-
-        if(!$resizing){
-            throw new \Exception("Error resizing");
-        }
+        $image->original_name = $original_name;
+        rename($fname, $original_name);
 
         $image->save();
         return $image;
     }
 
 
+    /**
+     *  @deprecated use handleUploadedFile instead
+     *  alias for handleUploadedFile
+     */
     public static function handleFile($file) : ImageModel
+    {
+        return static::handleUploadedFile($file);
+    }
+
+    public static function handleUploadedFile($file) : ImageModel
     {
         $fname = hash('crc32',time()).$file['name'];
         move_uploaded_file($file['tmp_name'], $fname);
@@ -150,28 +215,18 @@ class ImageModel extends \yii\db\ActiveRecord
         return static::handle($fname);
     }
 
-    public function getSmUrl()
-    {
-        return $this->imagesUrl.$this->sm_path;
-    }
-
-    public function getMdUrl()
-    {
-        return $this->imagesUrl.$this->md_path;
-    }
-
-    public function getLgUrl()
-    {
-        return $this->imagesUrl.$this->lg_path;
-    }
-
-
     public function beforeDelete()
     {
-        @unlink(\Yii::getAlias($this->imagesPath.$this->original_path));
-        @unlink(\Yii::getAlias($this->imagesPath.$this->sm_path));
-        @unlink(\Yii::getAlias($this->imagesPath.$this->md_path));
-        @unlink(\Yii::getAlias($this->imagesPath.$this->lg_path));
+        @unlink(\Yii::getAlias($this->imagesPath.$this->original_name));
+        $basePath = \Yii::getAlias($this->imagesPath);
+
+        $files = array_filter(scandir( $basePath ), function($file) use ($basePath) {
+            return is_file( $basePath . DIRECTORY_SEPARATOR . $file ) && preg_match("/^\w+\.\d+\.\d+\.\w{3,4}$/", $file);
+        });
+
+        foreach( $files as $file ){
+            @unlink( $basePath . DIRECTORY_SEPARATOR . $file );
+        }
     }
 
 }
