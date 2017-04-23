@@ -16,7 +16,11 @@
     },
     "autoload": {
         "psr-4": {
-            "r0n1k\\yii2imagewidget\\": "yii2-imagewidget"
+            "r0n1k\\yii2imagewidget\\": ""
         }
+    },
+    "scripts": {
+        "post-package-install": "php yii migrate/up --migrationPath=\"@vendor/r0n1k/yii2-imagewidget/migrations\" --interactive=0",
+        "pre-package-uninstall" : "php yii migrate/down --migrationPath\"@vendor.r0n1k/yii2-imagewidget/migrations\" --ineractive=0"
     }
 }
