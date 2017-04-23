@@ -18,4 +18,8 @@ class ImageWidgetAsset extends \yii\web\AssetBundle
     {
         $this->sourcePath = dirname(__FILE__).'/assets';
     }
+
+    public $depends = [
+        'yii\web\JqueryAsset',
+    ];
 }

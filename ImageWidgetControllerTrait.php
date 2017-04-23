@@ -26,9 +26,7 @@ trait ImageWidgetControllerTrait
             $model->group = $group;
             $model->save(false);
             $result['id'] = $model->id;
-            $result['sm_path'] = $model->sm_path;
-            $result['md_path'] = $model->md_path;
-            $result['lg_path'] = $model->lg_path;
+            $result['sm_path'] = $model->makeThumb(200,200);
             break;
         }
         return $result;

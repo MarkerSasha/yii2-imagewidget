@@ -18,9 +18,9 @@ class ImageWidget extends \yii\widgets\InputWidget
 
         $images = ImageModel::find();
         if(!is_null($this->group)){
-            $images = $images->where(['group'=>$this->group])->asArray()->all();
+            $images = $images->where(['group'=>$this->group])->indexBy('id')->all();
         } else {
-            $images = $images->asArray()->all();
+            $images = $images->all();
         }
 
         $attribute = $this->attribute;
@@ -34,24 +34,21 @@ class ImageWidget extends \yii\widgets\InputWidget
         }
 
         $input_name = \yii\helpers\Html::getInputName($this->model, $this->attribute);
+        $base_input_name = $input_name;
         if( $this->multiply ){
             $input_name.="[]";
         }
 
+
         $images_json = json_encode((function($array){
-            $ids = [];
+            $ids = array_keys($array);
             $result = [];
-            foreach($array as $i){
-                array_push($ids, intval($i['id']));
-            }
             foreach($ids as $id){
                 $image = array_shift($array);
                 $result[$id] = [
                     'id'      => intval($id),
-                    'lg_path' => $image['lg_path'],
-                    'md_path' => $image['md_path'],
-                    'sm_path' => $image['sm_path'],
-                    'group'   => $image['group'],
+                    'thumb' => $image->makeThumb(200,200),
+                    'group'   => $image->group,
                 ];
             }
             return $result;
@@ -65,6 +62,7 @@ class ImageWidget extends \yii\widgets\InputWidget
             'input_name'  => $input_name,
             'input_value' => $input_value,
             'images_json' => $images_json,
+            'base_input_name' => $base_input_name,
         ]);
     }
 

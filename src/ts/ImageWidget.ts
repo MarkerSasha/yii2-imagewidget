@@ -11,8 +11,8 @@ export class ImageWidget {
 
         this.chosenImages = [];
 
-
         $('#'+this.dom_id+' [name="'+this.inputName+'"]').each((i, obj):void=>{
+            if( (<any>obj).dataset.filler ){ return; }
             this.choseImage(parseInt($(<any>obj).val()));
         });
 
@@ -129,8 +129,8 @@ export class ImageWidget {
         let $backlight = $('#'+this.dom_id+' .imagewidget-backlight'),
             $zoom = $backlight.find('.imagewidget-zoom');
         $backlight.removeClass('closed');
-        $zoom.removeClass('closed').find('img').attr('src', '/images'+this.images[id].lg_path);
-        $zoom.find('.img-port').css('background-image', "url('/images"+this.images[id].lg_path+"')");
+        $zoom.removeClass('closed').find('img').attr('src', ''+this.images[id].thumb);
+        $zoom.find('.img-port').css('background-image', "url('"+this.images[id].thumb+"')");
 
     }
 
@@ -142,8 +142,10 @@ export class ImageWidget {
             //return;
         //}
         if( this.chosenImages.indexOf(id) !== -1 ){ return; }
-        $('#'+this.dom_id).append('<input type="hidden" name="'+this.inputName+'" value="'+id+'"/>');
         this.chosenImages.push(id);
+        if( $('#'+this.dom_id+' input[value="'+id+'"]').length == 0 ){
+            $('#'+this.dom_id).append('<input type="hidden" name="'+this.inputName+'" value="'+id+'"/>');
+        }
         $('#'+this.dom_id+' .imagewidget-library-image[data-id='+id+']').addClass('chosen');
         $('#'+this.dom_id+' .imagewidget-input .imagewidget-add-image').before(
             '<div class="col col-xs-6 col-sm-4 col-md-3 col-lg-2 imagewidget-input-image" data-id="'+id+'">'+
@@ -152,7 +154,7 @@ export class ImageWidget {
             '<span class="glyphicon glyphicon-remove"></span>'+
             '</button>'+
             '<div class="thumbnail zoomable">'+
-            '<img src="/images'+this.images[id].sm_path+'">'+
+            '<img src="'+this.images[id].thumb+'">'+
             '</div>'+
             '</div>');
         $('#'+this.dom_id+' .imagewidget-input-image[data-id='+id+'] button.remove').on('click',(evt)=>{
@@ -188,6 +190,7 @@ export class ImageWidget {
     }
 
     public renderLibrary(pagination = 0) {
+        console.log( this.images );
         let images = this.images,
             $library = $('#'+this.dom_id+' .imagewidget-popup'),
             $images_container = $library.find('.imagewidget-popup-content').empty(),
@@ -224,7 +227,7 @@ export class ImageWidget {
                     $images_container.append(
                         '<div class="col thumbnail imagewidget-library-image '+
                             (this.chosenImages.indexOf(image.id)!==-1?'chosen':'')+'" data-id="'+img_id+'">'+
-                        '<img src="/images'+image['sm_path']+'" />'+
+                        '<img src="'+image['thumb']+'" />'+
                         '</div>'
                     );
                 }
@@ -249,13 +252,7 @@ export class ImageWidget {
 
 
     public addImage(data:ImageInterface) : void {
-        this.images[data.id] = {
-            id: data.id,
-            lg_path: data.lg_path,
-            md_path: data.md_path,
-            sm_path: data.sm_path,
-            group: data.group,
-        };
+        this.images[data.id] = data;
     }
 
     public closePopups() : void {

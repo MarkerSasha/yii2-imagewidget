@@ -14,6 +14,7 @@ class ImageModel extends \yii\db\ActiveRecord
 
     public $imagesPath = "@frontend/web/images";
     public $imagesUrl = "@web/images";
+    public $runtimePath = "@runtime/imagewidget";
 
     public static function tableName()
     {
@@ -23,6 +24,12 @@ class ImageModel extends \yii\db\ActiveRecord
     public function init()
     {
         $this->group = "";
+        $this->runtimePath = \Yii::getAlias($this->runtimePath);
+        if(! is_dir($this->runtimePath) ){
+            if(!mkdir($this->runtimePath, 0777, true)){
+                throw new \Exception("ImageWidget: make runtime dir exception");
+            }
+        }
     }
 
     public function rules()
@@ -115,31 +122,6 @@ class ImageModel extends \yii\db\ActiveRecord
 
 
     /**
-     * @deprecated use makeThumb() to create url
-     */
-    public function getSmUrl()
-    {
-        return $this->makeThumb(256,256);
-    }
-
-    /**
-     * @deprecated use makeThumb() to create url
-     */
-    public function getMdUrl()
-    {
-        return $this->makeThumb(812,812);
-    }
-
-    /**
-     * @deprecated use makeThumb() to create url
-     */
-    public function getLgUrl()
-    {
-        return $this->makeThumb(1500,1500);
-    }
-
-
-    /**
      *  upload by url
      *  @param string $url
      *  @return ImageModel
@@ -180,18 +162,27 @@ class ImageModel extends \yii\db\ActiveRecord
 
         $image->extension = $extension;
 
-        if(!$this->validate(['extension']) ){
+        if(!$image->validate(['extension']) ){
             @unlink($fname);
         }
 
         do {
             $baseName = hash("crc32", $fname.time());
-            $original_name = \Yii::getAlias( $image->imagesPath.'/original/'.$baseName.'.'.$extension );
+            $original_name = $baseName;
         } while( ImageModel::find()->where(['original_name' => $original_name])->exists() );
 
 
         $image->original_name = $original_name;
-        rename($fname, $original_name);
+        rename(
+            $fname, 
+            \Yii::getAlias(
+                $image->imagesPath.
+                DIRECTORY_SEPARATOR.
+                'original'.
+                DIRECTORY_SEPARATOR.
+                $original_name.'.'.$extension
+            )
+        );
 
         $image->save();
         return $image;
