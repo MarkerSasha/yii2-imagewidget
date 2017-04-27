@@ -1,13 +1,7 @@
 <script>
-    (function(){
-        var onload = window.onload;
-        window.onload = function(){
-            if( onload instanceof Function ){
-                onload.apply(window,arguments);
-            }
-            new ImageWidget("<?=$dom_id?>", "<?=$input_name?>", <?=$images_json?>, "<?=$group?>", <?=$multiply?"true":"false"?>);
-        };
-    })();
+    $(function(){
+        new ImageWidget("<?=$dom_id?>", "<?=$input_name?>", <?=$images_json?>, "<?=$group?>", <?=$multiply?"true":"false"?>);
+    });
 </script>
 
 <div class="container imagewidget-main" id="<?=$dom_id?>">
