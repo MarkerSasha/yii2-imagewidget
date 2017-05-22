@@ -23,8 +23,7 @@ class ImageWidget extends \yii\widgets\InputWidget
             $images = $images->all();
         }
 
-        $attribute = $this->attribute;
-        $input_value = $this->model->$attribute;
+        $input_value = $this->model->{$this->attribute};
         if(!is_array($input_value)){
             if(! is_null($input_value) ){
                 $input_value = [$input_value];
