@@ -1,8 +1,8 @@
-<script>
+<?php $this->registerJs('
     $(function(){
-        new ImageWidget("<?=$dom_id?>", "<?=$input_name?>", <?=$images_json?>, "<?=$group?>", <?=$multiply?"true":"false"?>);
+        new ImageWidget("'.$dom_id.'", "'.$input_name.'", '.$images_json.', "'.$group.'", '.($multiply?"true":"false").');
     });
-</script>
+'); ?>
 
 <div class="container imagewidget-main" id="<?=$dom_id?>">
 
@@ -10,6 +10,7 @@
     'dom_id' => $dom_id,
     'images' => $images,
 ]) ?>
+
 
     <input type="hidden" name="<?=$base_input_name?>" data-filler=1 />
     <?php foreach($input_value as $value): ?>
