@@ -22,4 +22,8 @@ class ImageWidgetAsset extends \yii\web\AssetBundle
     public $depends = [
         'yii\web\JqueryAsset',
     ];
+
+    public $publishOptions = [
+        'forceCopy' => YII_DEBUG,
+    ];
 }
