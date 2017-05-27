@@ -12,7 +12,7 @@ class m111111_111111_create_imagewidget_table extends Migration
      */
     public function up()
     {
-        $this->createTable('imagewidget', [
+        $this->createTable('{{%imagewidget}}', [
             'id' => $this->primaryKey(),
             'group' => $this->string(64),
             'original_name' => $this->string(64)->unique()->notNull(),
@@ -26,6 +26,6 @@ class m111111_111111_create_imagewidget_table extends Migration
      */
     public function down()
     {
-        $this->dropTable('imagewidget');
+        $this->dropTable('{{%imagewidget}}');
     }
 }
